@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginFormInputs, loginSchema } from "../../zods/auth.schema";
 import CustomInput from "../../components/commons/input";
 import Button from "../../components/commons/button";
+import { loginUser } from "../../services/auth/auth.service"; // Đảm bảo bạn đã có hàm loginUser
+import { useNavigate } from "react-router-dom"; // Dùng để chuyển hướng sau khi đăng nhập thành công
 
 const Login: React.FC = () => {
     const {
@@ -14,9 +16,19 @@ const Login: React.FC = () => {
         resolver: zodResolver(loginSchema),
     });
 
-    const onSubmit = (data: LoginFormInputs) => {
-        console.log("Login data:", data);
-        alert("Đăng nhập thành công! ✅");
+    const navigate = useNavigate(); // Dùng để chuyển hướng sau khi đăng nhập thành công
+
+    const onSubmit = async (data: LoginFormInputs) => {
+        try {
+            // Gọi API login
+            const response = await loginUser(data);
+            console.log("Login data:", response);
+            alert("Đăng nhập thành công! ✅");
+            navigate("/dashboard");
+        } catch (error) {
+            console.error("Lỗi khi đăng nhập:", error);
+            alert("Đăng nhập thất bại. Vui lòng thử lại! ❌");
+        }
     };
 
     return (
