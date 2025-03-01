@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { RegisterFormInputs, registerSchema } from "../../zods/auth.schema";
+import { RegisterData, registerUser } from "../../services/auth/auth.service";
 import CustomInput from "../../components/commons/input";
 import Button from "../../components/commons/button";
 
@@ -10,19 +9,35 @@ const positions = ["Nhân viên", "Trưởng phòng", "Giám đốc"];
 
 const Register: React.FC = () => {
     const [preview, setPreview] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const {
         register,
         handleSubmit,
         setValue,
         formState: { errors },
-    } = useForm<RegisterFormInputs>({
-        resolver: zodResolver(registerSchema),
-    });
+    } = useForm<RegisterData>();
 
-    const onSubmit = (data: RegisterFormInputs) => {
-        console.log("Form data:", data);
-        alert("Đăng ký thành công! 🎉");
+    const onSubmit = async (data: RegisterData) => {
+        setLoading(true);
+        setError("");
+        setSuccess("");
+
+        try {
+            const formData: RegisterData = {
+                ...data,
+                avatar: data.avatar ?? null, // Nếu không có ảnh đại diện, set null
+            };
+
+            await registerUser(formData);
+            setSuccess("Đăng ký thành công!");
+        } catch (err: any) {
+            setError(err.message || "Đăng ký thất bại!");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +53,9 @@ const Register: React.FC = () => {
             <h2 className="text-2xl font-bold text-center mb-4">
                 Đăng Ký Nhân Sự 📝
             </h2>
+
+            {error && <p className="text-red-500 text-center">{error}</p>}
+            {success && <p className="text-green-500 text-center">{success}</p>}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {/* Grid 3 cột */}
@@ -123,7 +141,6 @@ const Register: React.FC = () => {
 
                     <CustomInput
                         label="Mức Lương"
-                        type="number"
                         name="salary"
                         register={register}
                         error={errors.salary?.message}
@@ -143,7 +160,7 @@ const Register: React.FC = () => {
                         <img
                             src={preview}
                             alt="Avatar"
-                            className="w-96 h-96 rounded-full mb-2"
+                            className="max-w-96 max-h-96 rounded-full mb-2"
                         />
                     )}
                     <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded">
@@ -159,8 +176,13 @@ const Register: React.FC = () => {
 
                 {/* Nút đăng ký căn giữa */}
                 <div className="flex justify-center">
-                    <Button type="submit" size="medium" variant="primary">
-                        Đăng Ký
+                    <Button
+                        type="submit"
+                        size="medium"
+                        variant="primary"
+                        disabled={loading}
+                    >
+                        {loading ? "Đang xử lý..." : "Đăng Ký"}
                     </Button>
                 </div>
             </form>

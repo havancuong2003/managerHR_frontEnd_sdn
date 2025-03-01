@@ -23,7 +23,7 @@ export type RegisterFormInputs = z.infer<typeof registerSchema>;
 
 const loginSchema = z.object({
     phone: z.string().regex(/^\d{10}$/, "Số điện thoại phải có 10 số"),
-    password: z.string().min(6, "Mật khẩu ít nhất 6 ký tự"),
+    password: z.string().min(3, "Mật khẩu ít nhất 3 ký tự"),
 });
 export type LoginFormInputs = z.infer<typeof loginSchema>;
 
