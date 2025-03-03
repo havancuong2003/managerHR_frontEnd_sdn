@@ -15,7 +15,7 @@ function App() {
 
                 {/* Group các trang có DashboardLayout */}
                 <Route path="/" element={<DashboardLayout />}>
-                    <Route index element={<Dashboard />} />
+                    <Route path="dashboard" element={<Dashboard />} />
                     <Route path="employees" element={<Employee />} />
                 </Route>
 
