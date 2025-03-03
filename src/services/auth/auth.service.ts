@@ -21,6 +21,7 @@ export interface LoginData {
 export const registerUser = async (data: RegisterData): Promise<any> => {
     try {
         const formData = new FormData();
+        console.log("check data", data);
 
         // ✅ Đảm bảo dữ liệu được gửi đúng kiểu
         formData.append("fullName", data.fullName);
@@ -30,19 +31,17 @@ export const registerUser = async (data: RegisterData): Promise<any> => {
         formData.append("phone", data.phone);
         formData.append("department", data.department);
         formData.append("position", data.position);
-        formData.append("salary", data.salary.toString()); // Chuyển number -> string
+        formData.append("base_salary", data.salary.toString()); // Chuyển number -> string
         formData.append("startDate", data.startDate);
 
         // Nếu có avatar, thêm vào formData
         if (data.avatar && data.avatar instanceof File) {
             formData.append("avatar", data.avatar);
         }
-
         const response = await axiosInstance.post("/auth/register", formData, {
             headers: { "Content-Type": "multipart/form-data" },
-            withCredentials: true, // ✅ Gửi Cookie
+            withCredentials: true,
         });
-        console.log("check response", response);
 
         return response.data;
     } catch (error: any) {

@@ -1,18 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { RegisterData, registerUser } from "../../services/auth/auth.service";
 import CustomInput from "../../components/commons/input";
 import Button from "../../components/commons/button";
-
-const departments = ["Kế toán", "Hành chính", "Kinh doanh", "IT"];
-const positions = ["Nhân viên", "Trưởng phòng", "Giám đốc"];
+import { getAllPositions } from "../../services/commons/position.service";
+import { Position } from "../../models/position";
+import { Department } from "../../models/department";
+import { getAllDepartments } from "../../services/commons/department.service";
 
 const Register: React.FC = () => {
     const [preview, setPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [positions, setPositions] = useState<Position[]>([]);
+    const [departments, setDepartments] = useState<Department[]>([]);
 
+    useEffect(() => {
+        // Gọi API lấy danh sách chức vụ
+        getAllPositions().then(setPositions).catch(console.error);
+        // Gọi API lấy danh sách phòng ban
+        getAllDepartments().then(setDepartments).catch(console.error);
+    }, []);
     const {
         register,
         handleSubmit,
@@ -29,7 +38,16 @@ const Register: React.FC = () => {
             const formData: RegisterData = {
                 ...data,
                 avatar: data.avatar ?? null, // Nếu không có ảnh đại diện, set null
+                position:
+                    data.position.length === 0
+                        ? positions[0]._id
+                        : data.position,
+                department:
+                    data.department.length === 0
+                        ? departments[0]._id
+                        : data.department,
             };
+            console.log("formData", formData);
 
             await registerUser(formData);
             setSuccess("Đăng ký thành công!");
@@ -107,11 +125,13 @@ const Register: React.FC = () => {
                             className="p-2 border rounded w-full"
                             {...register("department")}
                         >
-                            {departments.map((dep) => (
-                                <option key={dep} value={dep}>
-                                    {dep}
-                                </option>
-                            ))}
+                            {departments.map((dep: Department) => {
+                                return (
+                                    <option key={dep._id} value={dep._id}>
+                                        {dep.name}
+                                    </option>
+                                );
+                            })}
                         </select>
                         {errors.department && (
                             <p className="text-red-500 text-sm">
@@ -126,11 +146,13 @@ const Register: React.FC = () => {
                             className="p-2 border rounded w-full"
                             {...register("position")}
                         >
-                            {positions.map((pos) => (
-                                <option key={pos} value={pos}>
-                                    {pos}
-                                </option>
-                            ))}
+                            {positions.map((pos: Position) => {
+                                return (
+                                    <option key={pos._id} value={pos._id}>
+                                        {pos.name}
+                                    </option>
+                                );
+                            })}
                         </select>
                         {errors.position && (
                             <p className="text-red-500 text-sm">
