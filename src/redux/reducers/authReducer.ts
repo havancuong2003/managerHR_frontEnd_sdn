@@ -2,14 +2,14 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
     accessToken: string | null;
-    userId: string | null; // ✅ Thêm userId vào Redux
+    userId: string | null;
     role: string | null;
 }
 
 const initialState: AuthState = {
-    accessToken: null,
-    userId: null, // ✅ Ban đầu là null
-    role: null,
+    accessToken: localStorage.getItem("accessToken"), // ✅ Lấy từ localStorage
+    userId: localStorage.getItem("userId"), // ✅ Lấy từ localStorage
+    role: localStorage.getItem("role"), // ✅ Lấy từ localStorage
 };
 
 const authSlice = createSlice({
@@ -25,13 +25,23 @@ const authSlice = createSlice({
             }>
         ) => {
             state.accessToken = action.payload.accessToken;
-            state.userId = action.payload.userId; // ✅ Lưu userId
+            state.userId = action.payload.userId;
             state.role = action.payload.role;
+
+            // ✅ Lưu vào localStorage
+            localStorage.setItem("accessToken", action.payload.accessToken);
+            localStorage.setItem("userId", action.payload.userId);
+            localStorage.setItem("role", action.payload.role);
         },
         clearAuth: (state) => {
             state.accessToken = null;
-            state.userId = null; // ✅ Xóa userId khi logout
+            state.userId = null;
             state.role = null;
+
+            // ✅ Xóa khỏi localStorage khi logout
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("userId");
+            localStorage.removeItem("role");
         },
     },
 });

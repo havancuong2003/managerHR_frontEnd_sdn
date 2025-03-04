@@ -61,7 +61,22 @@ axiosInstance.interceptors.response.use(
                     throw new Error("User ID không tồn tại trong Redux");
 
                 // ✅ Gọi API `/refresh-token` (KHÔNG cần headers Authorization)
-                await axiosInstance.post("/auth/refresh-token", { userId });
+                const refreshResponse = await axiosInstance.post(
+                    "/auth/refresh-token",
+                    { userId }
+                );
+
+                const { accessToken } = refreshResponse.data;
+
+                // ✅ Lưu token mới vào Redux & localStorage
+                store.dispatch(
+                    setAuthData({
+                        accessToken,
+                        userId,
+                        role: store.getState().auth.role || "employee",
+                    })
+                );
+                localStorage.setItem("accessToken", accessToken);
 
                 processQueue(null);
                 isRefreshing = false;
