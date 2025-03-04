@@ -73,7 +73,6 @@ const Register: React.FC = () => {
                         ? departments[0]._id
                         : data.department,
             };
-            console.log("formData", formData);
 
             await registerUser(formData);
             setSuccess("Đăng ký thành công!");

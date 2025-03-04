@@ -77,7 +77,6 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                         ? departments[0]._id
                         : data.department,
             };
-            console.log("formData", formData);
 
             await registerUser(formData);
             setSuccess("Đăng ký thành công!");

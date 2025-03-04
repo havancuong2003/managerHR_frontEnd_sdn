@@ -3,6 +3,7 @@ import { Login, Register, NotFound, Forbidden403 } from "./pages";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/dashboard";
 import Employee from "./pages/employee";
+import PrivateRoutes from "./components/private_routes";
 
 function App() {
     return (
@@ -13,10 +14,16 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/forbidden" element={<Forbidden403 />} />
 
-                {/* Group các trang có DashboardLayout */}
-                <Route path="/" element={<DashboardLayout />}>
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="employees" element={<Employee />} />
+                {/* Group các trang có Private Route trước khi vào layout */}
+                <Route
+                    element={
+                        <PrivateRoutes rolesAccess={["admin", "employee"]} />
+                    }
+                >
+                    <Route path="/" element={<DashboardLayout />}>
+                        <Route path="dashboard" element={<Dashboard />} />
+                        <Route path="employees" element={<Employee />} />
+                    </Route>
                 </Route>
 
                 {/* Trang 404 */}
