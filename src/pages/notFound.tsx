@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const NotFound = () => {
     return (
         <div className="grid h-screen place-content-center bg-white px-4">
@@ -12,12 +14,12 @@ const NotFound = () => {
                     We can't find that page.
                 </p>
 
-                <a
-                    href="#"
+                <Link
+                    to={"/dashboard"}
                     className="mt-6 inline-block rounded-sm bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-3 focus:outline-hidden"
                 >
                     Go Back Home
-                </a>
+                </Link>
             </div>
         </div>
     );

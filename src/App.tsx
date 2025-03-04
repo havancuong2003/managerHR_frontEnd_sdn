@@ -4,6 +4,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/dashboard";
 import Employee from "./pages/employee";
 import PrivateRoutes from "./components/private_routes";
+import InfoEmployee from "./pages/info_employee";
 
 function App() {
     return (
@@ -22,7 +23,17 @@ function App() {
                 >
                     <Route path="/" element={<DashboardLayout />}>
                         <Route path="dashboard" element={<Dashboard />} />
+                    </Route>
+                </Route>
+                <Route element={<PrivateRoutes rolesAccess={["admin"]} />}>
+                    <Route path="/" element={<DashboardLayout />}>
                         <Route path="employees" element={<Employee />} />
+                    </Route>
+                </Route>
+
+                <Route element={<PrivateRoutes rolesAccess={["employee"]} />}>
+                    <Route path="/" element={<DashboardLayout />}>
+                        <Route path="employee/:id" element={<InfoEmployee />} />
                     </Route>
                 </Route>
 

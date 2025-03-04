@@ -60,3 +60,18 @@ export const loginUser = async (data: LoginData): Promise<any> => {
         throw error.response?.data || "Lỗi không xác định khi đăng nhập";
     }
 };
+
+export const logoutUser = async (): Promise<any> => {
+    try {
+        const response = await axiosInstance.post(
+            "/auth/logout",
+            {},
+            {
+                withCredentials: true,
+            }
+        );
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data || "Lỗi không xác định khi đăng xuat";
+    }
+};
