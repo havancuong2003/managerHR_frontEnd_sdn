@@ -6,6 +6,8 @@ import CustomInput from "../../components/commons/input";
 import Button from "../../components/commons/button";
 import { loginUser } from "../../services/auth/auth.service"; // Đảm bảo bạn đã có hàm loginUser
 import { useNavigate } from "react-router-dom"; // Dùng để chuyển hướng sau khi đăng nhập thành công
+import { useDispatch } from "react-redux";
+import { setAuthData } from "../../redux/reducers/authReducer";
 
 const Login: React.FC = () => {
     const {
@@ -17,13 +19,19 @@ const Login: React.FC = () => {
     });
 
     const navigate = useNavigate(); // Dùng để chuyển hướng sau khi đăng nhập thành công
-
+    const dispatch = useDispatch();
     const onSubmit = async (data: LoginFormInputs) => {
         try {
             // Gọi API login
             const response = await loginUser(data);
-            console.log("Login data:", response);
-            alert("Đăng nhập thành công! ✅");
+
+            dispatch(
+                setAuthData({
+                    accessToken: response.accessToken,
+                    userId: response.userId,
+                    role: response.role,
+                })
+            );
             navigate("/dashboard");
         } catch (error) {
             console.error("Lỗi khi đăng nhập:", error);

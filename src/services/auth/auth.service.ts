@@ -21,7 +21,6 @@ export interface LoginData {
 export const registerUser = async (data: RegisterData): Promise<any> => {
     try {
         const formData = new FormData();
-        console.log("check data", data);
 
         // ✅ Đảm bảo dữ liệu được gửi đúng kiểu
         formData.append("fullName", data.fullName);
