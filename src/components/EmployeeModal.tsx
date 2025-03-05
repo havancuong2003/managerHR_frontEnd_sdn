@@ -1,11 +1,16 @@
 import React from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
 
 interface ModalProps {
     isOpen: boolean;
     employee: any;
     onSave: () => void;
     onClose: () => void;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>, name: string) => void;
+    onChange: (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+        name: string
+    ) => void;
 }
 
 const EmployeeModal: React.FC<ModalProps> = ({
@@ -16,6 +21,14 @@ const EmployeeModal: React.FC<ModalProps> = ({
     onChange,
 }) => {
     if (!isOpen) return null;
+    // get depoartment and position by redux
+
+    const { positions } = useSelector((state: RootState) => state.positions);
+    console.log("positions", positions);
+
+    const { departments } = useSelector(
+        (state: RootState) => state.departments
+    );
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -50,7 +63,7 @@ const EmployeeModal: React.FC<ModalProps> = ({
                             <div className="mb-4">
                                 <label className="block">Ngày Sinh</label>
                                 <input
-                                    type="text"
+                                    type="date"
                                     name="dob"
                                     value={employee.dob}
                                     onChange={(e) => onChange(e, "dob")}
@@ -94,23 +107,49 @@ const EmployeeModal: React.FC<ModalProps> = ({
                         </div>
                         <div className="mb-4">
                             <label className="block">Phòng Ban</label>
-                            <input
-                                type="text"
-                                name="department"
-                                value={employee.departmentId?.name}
-                                onChange={(e) => onChange(e, "department")}
-                                className="w-full p-2 border rounded"
-                            />
+                            {departments && (
+                                <select
+                                    name="departmentId"
+                                    value={employee.departmentId._id}
+                                    onChange={(e) =>
+                                        onChange(e, "departmentId")
+                                    }
+                                    className="w-full p-2 border rounded"
+                                >
+                                    <option value="">
+                                        -- Chọn Phòng Ban --
+                                    </option>
+                                    {departments.map((department: any) => (
+                                        <option
+                                            key={department._id}
+                                            value={department._id}
+                                        >
+                                            {department.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
                         <div className="mb-4">
                             <label className="block">Chức Vụ</label>
-                            <input
-                                type="text"
-                                name="position"
-                                value={employee.positionId?.name}
-                                onChange={(e) => onChange(e, "position")}
-                                className="w-full p-2 border rounded"
-                            />
+                            {positions && (
+                                <select
+                                    name="positionId"
+                                    value={employee.positionId._id}
+                                    onChange={(e) => onChange(e, "positionId")}
+                                    className="w-full p-2 border rounded"
+                                >
+                                    <option value="">-- Chọn Chức Vụ --</option>
+                                    {positions.map((position: any) => (
+                                        <option
+                                            key={position._id}
+                                            value={position._id}
+                                        >
+                                            {position.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
                         <div className="mb-4">
                             <label className="block">Mức Lương</label>
@@ -125,7 +164,7 @@ const EmployeeModal: React.FC<ModalProps> = ({
                         <div className="mb-4">
                             <label className="block">Ngày Bắt Đầu</label>
                             <input
-                                type="text"
+                                type="date"
                                 name="startDate"
                                 value={employee.startDate}
                                 onChange={(e) => onChange(e, "startDate")}
