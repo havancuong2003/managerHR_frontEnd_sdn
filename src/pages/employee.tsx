@@ -12,7 +12,13 @@ import { fetchDepartments } from "../redux/reducers/departmentsReducer";
 import EmployeeModal from "../components/EmployeeModal";
 import RegisterModal from "../components/RegisterModal";
 import { Department } from "../models/department";
-
+import {
+    backUpEmployee,
+    restoreEmployee,
+} from "../services/auth/employee.service";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Đừng quên import css của toastify
+import { fetchPositions } from "../redux/reducers/positionReducer";
 // Định nghĩa kiểu dữ liệu nhân viên
 interface EmployeeType {
     [key: string]: any; // Thêm index signature
@@ -59,10 +65,14 @@ const Employee = () => {
     const [sortOrder, setSortOrder] = useState("asc");
     const [currentPage, setCurrentPage] = useState(1);
     const [usersPerPage, setUsersPerPage] = useState(3);
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [fileName, setFileName] = useState<string>("");
 
     useEffect(() => {
         dispatch(getAllEmployees());
         dispatch(fetchDepartments());
+        dispatch(fetchPositions());
     }, [dispatch]);
 
     useEffect(() => {
@@ -102,6 +112,8 @@ const Employee = () => {
 
     // Lưu thông tin nhân viên đã chỉnh sửa
     const handleSave = () => {
+        console.log("check edited employee", editedEmployee);
+
         if (editedEmployee) {
             dispatch(saveEmployee(editedEmployee));
             setShowModal(false);
@@ -121,7 +133,7 @@ const Employee = () => {
 
     // Cập nhật trường khi chỉnh sửa
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement>,
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
         name: string
     ) => {
         if (editedEmployee) {
@@ -187,6 +199,56 @@ const Employee = () => {
         indexOfFirstUser,
         indexOfLastUser
     );
+
+    const handleExportToExcel = async () => {
+        try {
+            const response = await backUpEmployee();
+
+            // Tạo link để tải file về
+            const blob = new Blob([response.data], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "employees_backup.xlsx";
+            link.click();
+
+            toast.success("Lấy data backup thành công!", {
+                position: "top-left",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+            });
+        } catch (error) {
+            console.error("Error during backup:", error);
+            toast.error("Lỗi khi tạo file backup!");
+        }
+    };
+
+    // 🔹 Xử lý chọn file & gửi lên API
+    const handleChooseFileRestore = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const file = event.target.files?.[0];
+
+        if (file) {
+            setSelectedFile(file);
+            setFileName(file.name); // Lưu tên tệp
+        }
+    };
+
+    const handleRestoreFile = async () => {
+        if (selectedFile) {
+            try {
+                // Gọi API để phục hồi dữ liệu
+                await restoreEmployee(selectedFile);
+                toast.success("✅ Phục hồi dữ liệu thành công!");
+            } catch (error) {
+                toast.error("❌ Lỗi khi phục hồi dữ liệu!");
+                console.error("Restore Error:", error);
+            }
+        }
+    };
 
     return (
         <div className="bg-gray-100 p-2">
@@ -339,7 +401,7 @@ const Employee = () => {
             {loading && <p>Đang tải dữ liệu...</p>}
             {error && <p className="text-red-500">{error}</p>}
 
-            <div className="w-full h-[500px] overflow-auto border border-gray-300 rounded-lg">
+            <div className="w-full h-[430px] overflow-auto border border-gray-300 rounded-lg">
                 <table className="w-full">
                     <thead className="bg-gray-100 sticky top-0">
                         <tr>
@@ -491,16 +553,44 @@ const Employee = () => {
                     dispatch(getAllEmployees());
                 }}
             />
+            <div className="text-center">
+                {fileName && (
+                    <>
+                        <span>Tệp đã chọn: {fileName}</span>
+                        <button
+                            onClick={handleRestoreFile}
+                            className="bg-green-500 text-white px-4 py-2 rounded mt-2"
+                            disabled={!selectedFile}
+                        >
+                            OK
+                        </button>
+                    </>
+                )}
+            </div>
             <div className="flex justify-center mt-6 gap-4">
                 {/* Nút Xuất Excel */}
-                <button className="bg-blue-500 text-white p-3 rounded text-sm">
+
+                <button
+                    className="bg-blue-500 text-white p-3 rounded text-sm"
+                    onClick={handleExportToExcel}
+                >
                     📤 Sao lưu dữ liệu nhân viên (Excel)
                 </button>
+                <ToastContainer />
 
-                {/* Nút Nhập Excel */}
-                <button className="bg-green-500 text-white p-3 rounded text-sm">
-                    📥 Phục hồi dữ liệu nhân viên (Excel)
-                </button>
+                <label className="bg-green-500 text-white p-3 rounded text-sm cursor-pointer hover:bg-green-600 transition-all">
+                    📥{" "}
+                    {isLoading
+                        ? "Đang phục hồi..."
+                        : "Phục hồi dữ liệu nhân viên (Excel)"}
+                    <input
+                        type="file"
+                        accept=".xlsx, .xls"
+                        onChange={handleChooseFileRestore}
+                        className="hidden"
+                        disabled={isLoading}
+                    />
+                </label>
             </div>
         </div>
     );

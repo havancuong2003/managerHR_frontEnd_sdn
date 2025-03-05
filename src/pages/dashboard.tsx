@@ -8,17 +8,6 @@ const Dashboard = () => {
     const dispatch = useDispatch<AppDispatch>();
 
     // Lấy dữ liệu positions và departments từ Redux
-    const {
-        positions,
-        loading: positionsLoading,
-        error: positionsError,
-    } = useSelector((state: RootState) => state.positions);
-
-    const {
-        departments,
-        loading: departmentsLoading,
-        error: departmentsError,
-    } = useSelector((state: RootState) => state.departments);
 
     // Fetch positions và departments khi component render lần đầu
     // useEffect(() => {
@@ -29,8 +18,6 @@ const Dashboard = () => {
     //         dispatch(fetchDepartments()); // Fetch departments nếu chưa có dữ liệu
     //     }
     // }, [dispatch, positions, departments]);
-    console.log("check positions", positions);
-    console.log("check departments", departments);
 
     return <div></div>;
 };

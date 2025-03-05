@@ -13,7 +13,7 @@ const Sidebar: React.FC = () => {
         {
             name: "Infomations",
             link: userId ? `/employee/${userId}` : "#", // Nếu userId null thì không điều hướng
-            roles: ["employee", "admin"],
+            roles: ["employee"],
         },
         { name: "Forbidden", link: "/forbidden", roles: ["admin", "employee"] },
     ];

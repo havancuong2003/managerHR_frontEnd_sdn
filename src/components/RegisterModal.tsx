@@ -17,7 +17,6 @@ interface RegisterModalProps {
 }
 
 const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
-    const [preview, setPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -85,14 +84,6 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
             setError(err.message || "Đăng ký thất bại!");
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setValue("avatar", file);
-            setPreview(URL.createObjectURL(file));
         }
     };
 
@@ -222,7 +213,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                             />
                         </div>
 
-                        <div className="flex flex-col items-center">
+                        {/* <div className="flex flex-col items-center">
                             {preview && (
                                 <img
                                     src={preview}
@@ -239,7 +230,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                                     onChange={handleAvatarChange}
                                 />
                             </label>
-                        </div>
+                        </div> */}
 
                         <div className="flex justify-center gap-4">
                             <Button
