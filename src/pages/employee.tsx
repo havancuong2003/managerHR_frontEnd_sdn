@@ -13,6 +13,8 @@ import EmployeeModal from "../components/EmployeeModal";
 import RegisterModal from "../components/RegisterModal";
 import { Department } from "../models/department";
 import {
+    adminDeleteEmployee,
+    adminEditInfoEmployee,
     backUpEmployee,
     restoreEmployee,
 } from "../services/auth/employee.service";
@@ -111,12 +113,45 @@ const Employee = () => {
     };
 
     // Lưu thông tin nhân viên đã chỉnh sửa
-    const handleSave = () => {
-        console.log("check edited employee", editedEmployee);
+    const handleSave = async () => {
+        if (!editedEmployee) return;
 
-        if (editedEmployee) {
-            dispatch(saveEmployee(editedEmployee));
+        // Create updatedEmployee with correct structure
+        const updatedEmployee = {
+            ...editedEmployee,
+            departmentId: {
+                _id:
+                    typeof editedEmployee.departmentId === "string"
+                        ? editedEmployee.departmentId
+                        : editedEmployee.departmentId._id,
+                name:
+                    typeof editedEmployee.departmentId === "string"
+                        ? "" // Provide a default name if needed
+                        : editedEmployee.departmentId.name,
+            },
+            positionId: {
+                _id:
+                    typeof editedEmployee.positionId === "string"
+                        ? editedEmployee.positionId
+                        : editedEmployee.positionId._id,
+                name:
+                    typeof editedEmployee.positionId === "string"
+                        ? "" // Provide a default name if needed
+                        : editedEmployee.positionId.name,
+            },
+        };
+
+        try {
+            const response = await adminEditInfoEmployee(
+                updatedEmployee._id,
+                updatedEmployee
+            );
+            console.log("check ressss", response);
+
+            dispatch(saveEmployee(updatedEmployee));
             setShowModal(false);
+        } catch (error) {
+            console.error("Error saving employee:", error);
         }
     };
 
@@ -127,8 +162,15 @@ const Employee = () => {
     };
 
     // Xóa nhân viên
-    const handleDelete = (id: string) => {
-        dispatch(deleteEmployee(id));
+    const handleDelete = async (id: string) => {
+        const confirmDelete = window.confirm(
+            "Bạn có chắc chắn muốn xóa nhân viên này?"
+        );
+        if (confirmDelete) {
+            await adminDeleteEmployee(id);
+            toast.success("Xóa nhân viên thành công!");
+            dispatch(deleteEmployee(id));
+        }
     };
 
     // Cập nhật trường khi chỉnh sửa

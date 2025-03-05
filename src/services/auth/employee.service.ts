@@ -78,12 +78,26 @@ export const restoreEmployee = async (file: any) => {
 export const adminEditInfoEmployee = async (id: string, data: any) => {
     try {
         const response = await axiosInstance.post(
-            `/employees/admin/${id}`,
+            `/employees/adminUpdate`,
             data,
             {
                 withCredentials: true,
             }
         );
+
+        return response.data;
+    } catch (error) {
+        console.log("error update employee by id", error);
+        throw error;
+    }
+};
+
+export const adminDeleteEmployee = async (id: string) => {
+    try {
+        const response = await axiosInstance.delete(`/employees/adminDelete`, {
+            data: { id },
+            withCredentials: true,
+        });
 
         return response.data;
     } catch (error) {
