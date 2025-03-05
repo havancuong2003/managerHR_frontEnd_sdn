@@ -24,7 +24,6 @@ const EmployeeModal: React.FC<ModalProps> = ({
     // get depoartment and position by redux
 
     const { positions } = useSelector((state: RootState) => state.positions);
-    console.log("positions", positions);
 
     const { departments } = useSelector(
         (state: RootState) => state.departments
