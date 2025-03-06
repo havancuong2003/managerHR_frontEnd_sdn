@@ -8,6 +8,7 @@ import { loginUser } from "../../services/auth/auth.service"; // Đảm bảo b�
 import { useNavigate } from "react-router-dom"; // Dùng để chuyển hướng sau khi đăng nhập thành công
 import { useDispatch } from "react-redux";
 import { setAuthData } from "../../redux/reducers/authReducer";
+import { toast, ToastContainer } from "react-toastify";
 
 const Login: React.FC = () => {
     const {
@@ -20,10 +21,11 @@ const Login: React.FC = () => {
 
     const navigate = useNavigate(); // Dùng để chuyển hướng sau khi đăng nhập thành công
     const dispatch = useDispatch();
+
     const onSubmit = async (data: LoginFormInputs) => {
         try {
-            // Gọi API login
             const response = await loginUser(data);
+            console.log("dấdsadasd", response);
 
             dispatch(
                 setAuthData({
@@ -34,8 +36,16 @@ const Login: React.FC = () => {
             );
             navigate("/dashboard");
         } catch (error) {
-            console.error("Lỗi khi đăng nhập:", error);
-            alert("Đăng nhập thất bại. Vui lòng thử lại! ❌");
+            console.error("Lỗi khi đăng nhậpaaaa:", error);
+            toast.error("Lỗi khi đăng nhập!", {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         }
     };
 
@@ -44,7 +54,7 @@ const Login: React.FC = () => {
             <h2 className="text-2xl font-bold text-center mb-4">
                 Đăng Nhập 🔐
             </h2>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-4">
                 <CustomInput
                     label="Số Điện Thoại"
                     name="phone"
@@ -58,20 +68,18 @@ const Login: React.FC = () => {
                     register={register}
                     error={errors.password?.message}
                 />
-
                 <div className="flex justify-center">
-                    <Button type="submit" size="medium" variant="primary">
+                    <Button
+                        type="button"
+                        size="medium"
+                        variant="primary"
+                        onClick={handleSubmit(onSubmit)}
+                    >
                         Đăng Nhập
                     </Button>
+                    <ToastContainer />
                 </div>
-            </form>
-
-            <p className="text-center text-gray-600 mt-4">
-                Chưa có tài khoản?{" "}
-                <a href="/register" className="text-blue-500">
-                    Đăng ký
-                </a>
-            </p>
+            </div>
         </div>
     );
 };

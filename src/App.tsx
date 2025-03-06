@@ -5,6 +5,7 @@ import Dashboard from "./pages/dashboard";
 import Employee from "./pages/employee";
 import PrivateRoutes from "./components/private_routes";
 import InfoEmployee from "./pages/info_employee";
+import ActivityLogTable from "./pages/activity_logs";
 
 function App() {
     return (
@@ -28,6 +29,13 @@ function App() {
                 <Route element={<PrivateRoutes rolesAccess={["admin"]} />}>
                     <Route path="/" element={<DashboardLayout />}>
                         <Route path="employees" element={<Employee />} />
+                    </Route>
+
+                    <Route path="/" element={<DashboardLayout />}>
+                        <Route
+                            path="activitylogs"
+                            element={<ActivityLogTable />}
+                        />
                     </Route>
                 </Route>
 

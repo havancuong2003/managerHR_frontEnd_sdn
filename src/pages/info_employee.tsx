@@ -8,6 +8,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { clearAuth } from "../redux/reducers/authReducer";
+import { toast, ToastContainer } from "react-toastify";
 
 const InfoEmployee = () => {
     const { id } = useParams();
@@ -85,6 +86,21 @@ const InfoEmployee = () => {
     };
 
     const handleSubmit = async () => {
+        if (!employee) return;
+        // Validate các trường đã thay đổi trong formData so với originalEmployee
+        const validationError = validateChangedFields(employee, formData);
+        if (validationError) {
+            // Nếu có lỗi validate, thông báo lỗi và không tiếp tục
+            toast.error(validationError, {
+                autoClose: false,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            return;
+        }
         try {
             const formDataToSubmit = { ...formData };
 
@@ -95,6 +111,20 @@ const InfoEmployee = () => {
                     formDataToSubmit
                 );
                 setEmployee(response);
+                setPreviewAvatar(null);
+                setFormData({
+                    ...formData,
+                    avatar: null,
+                    avatarUrl: response.avatarUrl,
+                    // Reset avatar
+                });
+                toast.success("Cập nhật thành công", {
+                    autoClose: false,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
             } else {
                 // Nếu không có thay đổi ảnh, chỉ gửi các thông tin khác
                 const response = await updateEmployeeById(
@@ -102,6 +132,20 @@ const InfoEmployee = () => {
                     formDataToSubmit
                 );
                 setEmployee(response);
+                setPreviewAvatar(null);
+                setFormData({
+                    ...formData,
+                    avatar: null,
+                    avatarUrl: response.avatarUrl,
+                    // Reset avatar
+                });
+                toast.success("Cập nhật thành công", {
+                    autoClose: false,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
             }
 
             setIsEditing(false);
@@ -130,11 +174,6 @@ const InfoEmployee = () => {
         setIsEditing(false);
     };
     const toDataURL = async (url: string) => {
-        /* Using Fetch */
-        // const response = await fetch(url)
-        // const blobData = await response.blob()
-        // const imageDataUrl = URL.createObjectURL(blobData);
-
         /* Using Axios */
         const response = await axios.get(url, { responseType: "blob" });
         const imageDataUrl = URL.createObjectURL(response.data);
@@ -167,8 +206,47 @@ const InfoEmployee = () => {
     if (!employee)
         return <p className="text-center mt-10">Đang tải dữ liệu...</p>;
 
+    const validateChangedFields = (originalEmployee: any, formData: any) => {
+        // Kiểm tra fullName nếu thay đổi
+        if (formData.fullName !== originalEmployee.fullName) {
+            if (!formData.fullName || formData.fullName.trim().length < 3) {
+                return "Tên nhân viên phải có ít nhất 3 ký tự";
+            }
+        }
+
+        // Kiểm tra dob (Ngày sinh) nếu thay đổi
+        if (formData.dob !== originalEmployee.dob) {
+            if (!formData.dob || new Date(formData.dob) >= new Date()) {
+                return "Ngày sinh phải ở trong quá khứ";
+            }
+        }
+
+        // Kiểm tra gender (Giới tính) nếu thay đổi
+        if (formData.gender !== originalEmployee.gender) {
+            if (!formData.gender || !["Nam", "Nữ"].includes(formData.gender)) {
+                return "Giới tính chỉ có thể là Nam hoặc Nữ";
+            }
+        }
+
+        // Kiểm tra address (Địa chỉ) nếu thay đổi
+        if (formData.address !== originalEmployee.address) {
+            if (!formData.address || formData.address.trim().length < 5) {
+                return "Địa chỉ phải có ít nhất 5 ký tự";
+            }
+        }
+
+        // Kiểm tra phone (Số điện thoại) nếu thay đổi
+        if (formData.phone !== originalEmployee.phone) {
+            if (!formData.phone || !/^\d{10}$/.test(formData.phone)) {
+                return "Số điện thoại phải có 10 chữ số";
+            }
+        }
+
+        return null; // Nếu tất cả các trường hợp validate đều hợp lệ
+    };
+
     return (
-        <div className="max-w-full mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">
+        <div className="max-w-full mx-auto p-6 bg-white shadow-lg rounded-lg mt-10 h-full">
             <h2 className="text-2xl font-bold mb-4 text-center">
                 Thông Tin Nhân Viên
             </h2>
@@ -181,13 +259,16 @@ const InfoEmployee = () => {
                         style={{
                             backgroundImage: `url(${
                                 previewAvatar ||
-                                formData.avatarUrl ||
-                                "/default-avatar.png"
+                                (formData.avatarUrl &&
+                                formData.avatarUrl.trim() !== ""
+                                    ? formData.avatarUrl
+                                    : "/img/default_avatar.jpg")
                             })`,
                             backgroundSize: "cover",
                             backgroundPosition: "center",
                         }}
-                    />
+                    ></div>
+
                     <div className="flex gap-3">
                         {isEditing && (
                             <>
@@ -228,7 +309,25 @@ const InfoEmployee = () => {
                             .map((key) => (
                                 <div key={key}>
                                     <label className="block text-sm font-semibold capitalize">
-                                        {key}
+                                        {key === "fullName"
+                                            ? "Tên nhân viên"
+                                            : key === "dob"
+                                            ? "Ngày sinh"
+                                            : key === "gender"
+                                            ? "Giới tính"
+                                            : key === "address"
+                                            ? "Địa chỉ"
+                                            : key === "phone"
+                                            ? "Số điện thoại"
+                                            : key === "department"
+                                            ? "Phòng ban"
+                                            : key === "position"
+                                            ? "Chức vụ"
+                                            : key === "salary"
+                                            ? "Lương"
+                                            : key === "startDate"
+                                            ? "Ngày bắt đầu"
+                                            : key}
                                     </label>
                                     {isEditing &&
                                     [
@@ -249,11 +348,11 @@ const InfoEmployee = () => {
                                                 ]
                                             )}
                                             onChange={handleChange}
-                                            className="border p-2 rounded w-full"
+                                            className="border p-4 rounded w-full"
                                         />
                                     ) : (
                                         <span
-                                            className={`block p-2 rounded w-full ${
+                                            className={`block p-4 rounded w-full ${
                                                 [
                                                     "department",
                                                     "position",

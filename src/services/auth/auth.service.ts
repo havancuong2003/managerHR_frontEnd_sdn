@@ -52,10 +52,13 @@ export const loginUser = async (data: LoginData): Promise<any> => {
     try {
         // Gửi yêu cầu POST đến API đăng nhập
         const response = await axiosInstance.post("/auth/login", data);
+        console.log("check response login", response);
 
         // Trả về kết quả từ API (response.data có thể chứa thông tin như token, user, ... tùy theo API của bạn)
         return response.data;
     } catch (error: any) {
+        console.log("error login", error);
+
         // Nếu có lỗi, ném lỗi từ phản hồi của server hoặc lỗi không xác định
         throw error.response?.data || "Lỗi không xác định khi đăng nhập";
     }

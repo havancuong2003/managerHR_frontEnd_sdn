@@ -40,10 +40,15 @@ const EmployeeModal: React.FC<ModalProps> = ({
                     <div className="">
                         <div className="flex flex-col items-center">
                             <img
-                                src={employee.avatarUrl}
+                                src={
+                                    employee.avatarUrl
+                                        ? employee.avatarUrl
+                                        : "/img/default_avatar.jpg"
+                                }
                                 alt={employee.fullName}
                                 className="w-56 h-56 rounded-full mb-4"
                             />
+
                             <label className="block text-center">
                                 Ảnh Đại Diện
                             </label>
@@ -178,13 +183,13 @@ const EmployeeModal: React.FC<ModalProps> = ({
                         onClick={onSave}
                         className="bg-green-500 text-white p-2 rounded mr-2"
                     >
-                        Save
+                        Lưu
                     </button>
                     <button
                         onClick={onClose}
                         className="bg-red-500 text-white p-2 rounded"
                     >
-                        Cancel
+                        Hủy bỏ
                     </button>
                 </div>
             </div>
