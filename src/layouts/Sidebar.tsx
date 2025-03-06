@@ -9,18 +9,23 @@ const Sidebar: React.FC = () => {
 
     const menuItems = [
         { name: "Dashboard", link: "/dashboard", roles: ["admin", "employee"] },
-        { name: "Employees", link: "/employees", roles: ["admin"] },
         {
-            name: "Infomations",
+            name: "Thông tin các nhân viên",
+            link: "/employees",
+            roles: ["admin"],
+        },
+        {
+            name: "Thông tin cá nhân",
             link: userId ? `/employee/${userId}` : "#", // Nếu userId null thì không điều hướng
             roles: ["employee"],
         },
+        { name: "Lịch sử hoạt động", link: "/activitylogs", roles: ["admin"] },
         { name: "Forbidden", link: "/forbidden", roles: ["admin", "employee"] },
     ];
 
     return (
         <aside className="w-64 h-[calc(100vh-8rem)] bg-gray-800 text-white fixed left-0 top-16 p-4">
-            <h2 className="text-xl font-bold mb-4">Menu</h2>
+            <h2 className="text-xl font-bold mb-4">Danh sách các mục</h2>
             <nav className="flex flex-col space-y-2">
                 {menuItems
                     .filter((item) => item.roles.includes(role || "")) // Kiểm tra quyền

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema, RegisterFormInputs } from "../zods/auth.schema";
 
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../redux/store";
@@ -47,7 +50,9 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
         handleSubmit,
         setValue,
         formState: { errors },
-    } = useForm<RegisterData>();
+    } = useForm<RegisterFormInputs>({
+        resolver: zodResolver(registerSchema),
+    });
 
     useEffect(() => {
         if (positions.length > 0) {
@@ -58,7 +63,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
         }
     }, [positions, departments, setValue]);
 
-    const onSubmit = async (data: RegisterData) => {
+    const onSubmit = async (data: RegisterFormInputs) => {
         setLoading(true);
         setError("");
         setSuccess("");
@@ -75,6 +80,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                     data.department.length === 0
                         ? departments[0]._id
                         : data.department,
+                salary: parseFloat(data.salary), // Chuyển đổi từ string thành number
             };
 
             await registerUser(formData);

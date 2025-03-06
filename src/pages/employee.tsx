@@ -21,6 +21,15 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Đừng quên import css của toastify
 import { fetchPositions } from "../redux/reducers/positionReducer";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+} from "@mui/material";
 // Định nghĩa kiểu dữ liệu nhân viên
 interface EmployeeType {
     [key: string]: any; // Thêm index signature
@@ -115,7 +124,20 @@ const Employee = () => {
     // Lưu thông tin nhân viên đã chỉnh sửa
     const handleSave = async () => {
         if (!editedEmployee) return;
-
+        // Validate employee data
+        const validationError = validateEmployeeData(editedEmployee);
+        if (validationError) {
+            // If validation fails, show the error and do not proceed
+            toast.error(validationError, {
+                autoClose: false,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            return;
+        }
         // Create updatedEmployee with correct structure
         const updatedEmployee = {
             ...editedEmployee,
@@ -146,10 +168,12 @@ const Employee = () => {
                 updatedEmployee._id,
                 updatedEmployee
             );
-            console.log("check ressss", response);
 
             dispatch(saveEmployee(updatedEmployee));
-            setShowModal(false);
+            toast.success("Chỉnh sử thông tin nhân viên thành công!");
+            setTimeout(() => {
+                setShowModal(false);
+            }, 1000);
         } catch (error) {
             console.error("Error saving employee:", error);
         }
@@ -197,7 +221,8 @@ const Employee = () => {
                     .includes(searchTerm.toLowerCase()) ||
                 employee.positionId.name
                     .toLowerCase()
-                    .includes(searchTerm.toLowerCase())
+                    .includes(searchTerm.toLowerCase()) ||
+                employee.phone.toLowerCase().includes(searchTerm.toLowerCase())
         )
         .filter(
             (employee: EmployeeType) =>
@@ -244,6 +269,7 @@ const Employee = () => {
 
     const handleExportToExcel = async () => {
         try {
+            //
             const response = await backUpEmployee();
 
             // Tạo link để tải file về
@@ -255,12 +281,12 @@ const Employee = () => {
             link.download = "employees_backup.xlsx";
             link.click();
 
-            toast.success("Lấy data backup thành công!", {
-                position: "top-left",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-            });
+            // toast.success("Lấy data backup thành công!", {
+            //     position: "top-left",
+            //     autoClose: 5000,
+            //     hideProgressBar: false,
+            //     closeOnClick: true,
+            // });
         } catch (error) {
             console.error("Error during backup:", error);
             toast.error("Lỗi khi tạo file backup!");
@@ -292,6 +318,49 @@ const Employee = () => {
         }
     };
 
+    const validateEmployeeData = (employee: any) => {
+        // Validate fullName
+        if (!employee.fullName || employee.fullName.trim().length < 3) {
+            return "Tên nhân viên phải có ít nhất 3 ký tự";
+        }
+
+        // Validate dob (Ngày sinh)
+        if (!employee.dob || new Date(employee.dob) >= new Date()) {
+            return "Ngày sinh phải ở trong quá khứ";
+        }
+
+        // Validate phone (Số điện thoại)
+        if (!employee.phone || !/^\d{10}$/.test(employee.phone)) {
+            return "Số điện thoại phải có 10 chữ số";
+        }
+
+        // Validate departmentId (Phòng ban)
+        if (!employee.departmentId || !employee.departmentId._id) {
+            return "Vui lòng chọn phòng ban";
+        }
+
+        // Validate positionId (Chức vụ)
+        if (!employee.positionId || !employee.positionId._id) {
+            return "Vui lòng chọn chức vụ";
+        }
+
+        // Validate base_salary (Mức lương)
+        if (!employee.base_salary || employee.base_salary <= 0) {
+            return "Mức lương phải lớn hơn 0";
+        }
+
+        // Validate startDate (Ngày bắt đầu)
+        if (!employee.startDate || new Date(employee.startDate) <= new Date()) {
+            return "Ngày bắt đầu phải ở trong tương lai";
+        }
+
+        if (employee.gender !== "Nam" && employee.gender !== "Nữ") {
+            return "Gender phải là nam hoặc nữ";
+        }
+
+        return null; // return null if everything is valid
+    };
+
     return (
         <div className="bg-gray-100 p-2">
             <h2 className="text-2xl font-bold mb-4">Danh Sách Nhân Viên</h2>
@@ -306,7 +375,7 @@ const Employee = () => {
                         <div className="flex items-center border border-gray-300 p-2 rounded-md text-sm">
                             <input
                                 type="text"
-                                placeholder="Nhập tên, phòng ban, chức vụ..."
+                                placeholder="Nhập tên, phòng ban, chức vụ, số điện thoại"
                                 value={searchTerm}
                                 onChange={handleSearchTermChange}
                                 className="w-full outline-none"
@@ -443,7 +512,7 @@ const Employee = () => {
             {loading && <p>Đang tải dữ liệu...</p>}
             {error && <p className="text-red-500">{error}</p>}
 
-            <div className="w-full h-[430px] overflow-auto border border-gray-300 rounded-lg">
+            {/* <div className="w-full h-[430px] overflow-auto border border-gray-300 rounded-lg">
                 <table className="w-full">
                     <thead className="bg-gray-100 sticky top-0">
                         <tr>
@@ -466,7 +535,11 @@ const Employee = () => {
                                 <tr key={employee._id}>
                                     <td className="border-b p-2">
                                         <img
-                                            src={employee.avatarUrl}
+                                            src={
+                                                employee.avatarUrl
+                                                    ? employee.avatarUrl
+                                                    : "/img/default_avatar.jpg"
+                                            }
                                             alt={employee.fullName}
                                             className="w-12 h-12 rounded-full"
                                         />
@@ -503,7 +576,7 @@ const Employee = () => {
                                             onClick={() => handleEdit(employee)}
                                             className="bg-blue-500 text-white p-2 rounded mr-2"
                                         >
-                                            View/Edit
+                                            Xem/Sửa
                                         </button>
                                         <button
                                             onClick={() =>
@@ -511,7 +584,7 @@ const Employee = () => {
                                             }
                                             className="bg-red-500 text-white p-2 rounded"
                                         >
-                                            Delete
+                                            Xóa
                                         </button>
                                     </td>
                                 </tr>
@@ -525,7 +598,273 @@ const Employee = () => {
                         )}
                     </tbody>
                 </table>
-            </div>
+            </div> */}
+            <TableContainer
+                component={Paper}
+                sx={{ maxHeight: 500, overflowY: "auto" }}
+            >
+                <Table
+                    sx={{
+                        minWidth: 850,
+                        tableLayout: "fixed", // Cố định chiều rộng của các cột
+                        borderCollapse: "collapse", // Đảm bảo không có viền chồng lên nhau
+                    }}
+                    aria-label="simple table"
+                >
+                    <TableHead>
+                        <TableRow>
+                            <TableCell
+                                sx={{
+                                    width: 100,
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Ảnh
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Tên Nhân Viên
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Ngày Sinh
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                    width: 100,
+                                }}
+                            >
+                                Giới Tính
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Địa Chỉ
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Số Điện Thoại
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Phòng Ban
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Chức Vụ
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Mức Lương
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Ngày Bắt Đầu
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    border: "1px solid #ccc",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Hành Động
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {currentUsers.length > 0 ? (
+                            currentUsers.map((employee: EmployeeType) => (
+                                <TableRow key={employee._id}>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                            textAlign: "center",
+                                        }}
+                                    >
+                                        <img
+                                            src={
+                                                employee.avatarUrl
+                                                    ? employee.avatarUrl
+                                                    : "/img/default_avatar.jpg"
+                                            }
+                                            alt={employee.fullName}
+                                            className="w-12 h-12 rounded-full object-cover"
+                                        />
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                        }}
+                                    >
+                                        {employee.fullName}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                        }}
+                                    >
+                                        {employee.dob}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                        }}
+                                    >
+                                        {employee.gender}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                        }}
+                                    >
+                                        {employee.address}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                        }}
+                                    >
+                                        {employee.phone}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                        }}
+                                    >
+                                        {employee.departmentId.name}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                        }}
+                                    >
+                                        {employee.positionId.name}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                        }}
+                                    >
+                                        {employee.base_salary}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                        }}
+                                    >
+                                        {employee.startDate}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            wordWrap: "break-word",
+                                            whiteSpace: "normal",
+                                            border: "1px solid #ccc",
+                                        }}
+                                    >
+                                        <button
+                                            onClick={() => handleEdit(employee)}
+                                            className="bg-blue-500 text-white p-2 rounded mr-2 mb-2 w-[100px]"
+                                        >
+                                            Xem/Sửa
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                handleDelete(employee._id)
+                                            }
+                                            className="bg-red-500 text-white p-2 rounded w-[100px]"
+                                        >
+                                            Xóa
+                                        </button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={11}
+                                    className="text-center p-2"
+                                >
+                                    Không có nhân viên
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </TableContainer>
 
             {/* Custom Modal */}
             {showModal && editedEmployee && (
