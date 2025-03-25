@@ -19,8 +19,48 @@ const Sidebar: React.FC = () => {
             link: userId ? `/employee/${userId}` : "#", // Nếu userId null thì không điều hướng
             roles: ["employee"],
         },
+
+        {
+            name: "Time Checking",
+            link: "/time-checking",
+            roles: ["admin", "employee"],
+        },
+        {
+            name: "Leave Request",
+            link: "/leave-request",
+            roles: ["admin", "employee"],
+        },
+        {
+            name: "Salary",
+            link: "/salary",
+            roles: ["admin", "employee"],
+        },
         { name: "Lịch sử hoạt động", link: "/activitylogs", roles: ["admin"] },
-        { name: "Forbidden", link: "/forbidden", roles: ["admin", "employee"] },
+        {
+            name: "Department Time Checking",
+            link: "/manage-time-checking",
+            roles: ["admin"],
+        },
+        {
+            name: "Department Leave Request",
+            link: "/manage-leave-request",
+            roles: ["admin"],
+        },
+        {
+            name: "Department Management",
+            link: "/manage-department",
+            roles: ["admin"],
+        },
+        {
+            name: "Department Bonus Salary",
+            link: "/manage-bonus-salary",
+            roles: ["admin"],
+        },
+        {
+            name: "Department Salary",
+            link: "/manage-salary",
+            roles: ["admin"],
+        },
     ];
 
     return (
